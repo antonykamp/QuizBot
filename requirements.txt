@@ -1,2 +1,4 @@
 python-telegram-bot==12.7
 pymongo==3.6
+pytest-asyncio
+pytest

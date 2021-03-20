@@ -5,21 +5,19 @@ Module with methods to create a quiz with a telegram bot
 import logging
 import pickle
 import pymongo
+import os
 from telegram import ReplyKeyboardMarkup, ChatAction
 from telegram.ext import ConversationHandler
 from telegram.replykeyboardremove import ReplyKeyboardRemove
-from quizbot.bot.bot import MONGODB_TOKEN
 from quizbot.quiz.question_factory import QuestionBool, QuestionChoice,\
     QuestionChoiceSingle, QuestionNumber, QuestionString
 from quizbot.quiz.quiz import Quiz
 
-# MongoDB client and database
-client = pymongo.MongoClient(MONGODB_TOKEN)
-db = client.quizzes
-
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+db = pymongo.MongoClient(os.environ.get('MONGODB')).quizzes
 
 # Dict with user data like a quiz instance
 userDict = dict()
@@ -154,9 +152,8 @@ def enter_answer(update, _):
     # Try to init question instance
     QuestionType = userDict[user_id]['questtype']
     try:
-        userDict[user_id]['questionInstance'] = \
-            QuestionType(userDict[user_id]['question'],
-                         userDict[user_id]['answer'])
+        userDict[user_id]['questionInstance'] = QuestionType(userDict[user_id]['question'],
+                                                             userDict[user_id]['answer'])
     except AssertionError:
         # TODO specify exceptions
         # Error because it isnt a number, no entry, not True/False,...
@@ -176,7 +173,8 @@ def enter_answer(update, _):
         return 'ENTER_POSSIBLE_ANSWER'
 
     # Add question to quiz
-    userDict[user_id]['quiz'].add_question(userDict[user_id]['questionInstance'])
+    userDict[user_id]['quiz'].add_question(
+        userDict[user_id]['questionInstance'])
 
     # Asks for type of next question
     list_question = [[el] for el in list(dict_question_types.keys())]
@@ -237,7 +235,8 @@ def enter_randomness_question(update, _):
                 update.message.from_user.username)
 
     # Add question to quiz
-    userDict[user_id]['quiz'].add_question(userDict[user_id]['questionInstance'])
+    userDict[user_id]['quiz'].add_question(
+        userDict[user_id]['questionInstance'])
     logger.info('[%s] Added the question to the quiz',
                 update.message.from_user.username)
 

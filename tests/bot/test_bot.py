@@ -1,23 +1,25 @@
 """
 This module tests the telegram bot by creating and attempting to a quiz.
 """
-import pymongo
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 from telethon.tl.custom.message import Message
 from pytest import mark
-from tests.bot.conftest import API_ID, API_HASH, SESSION_STR
+import os
+import pymongo
 
-# mongo db client
-client = pymongo.MongoClient("mongodb://antony:3JKzabQ7yk87cWi@cluster0-shard-00-00.5gkw9.mongodb.net:27017,cluster0-shard-00-01.5gkw9.mongodb.net:27017,cluster0-shard-00-02.5gkw9.mongodb.net:27017/quizzes?ssl=true&replicaSet=atlas-6s2gyh-shard-0&authSource=admin&retryWrites=true&w=majority")
-db = client.quizzes
+db = pymongo.MongoClient(os.environ.get('MONGODB')).quizzes
+SESSION_STR = os.environ['SESSION_STR']
+API_ID = os.environ['API_ID']
+API_HASH = os.environ['API_HASH']
 
 
 @mark.asyncio
 async def test_complete_bot():
     """Tests the whole bot"""
 
-    client = TelegramClient(StringSession(SESSION_STR), API_ID, API_HASH)
+    client = TelegramClient(StringSession(
+        SESSION_STR), API_ID, API_HASH)
     await client.connect()
     async with client.conversation("antonystestbot", timeout=10) as conv:
 
@@ -32,9 +34,9 @@ async def test_complete_bot():
         assert "- ask for a string," in resp.raw_text
         assert "- ask für a boolean value," in resp.raw_text
         assert "- create multiple choice questions or" in resp.raw_text
-        assert "- create muttiple choice questions with one correct answer." in resp.raw_text
+        assert "- create multiple choice questions with one correct answer." in resp.raw_text
         assert "If you want to create a new quiz, call /create. 🤓" in resp.raw_text
-        assert "If you want to attempt to a quiz, call /attempt. 🤔" in resp.raw_text
+        assert "If you want to attempt a quiz, call /attempt. 🤔" in resp.raw_text
         assert "If you want to rename one of your quizzes, call /rename. ✏️" in resp.raw_text
         assert "If you want to delete one of your quizzes, call /remove." in resp.raw_text
         assert "Have fun! 🥳" in resp.raw_text
@@ -212,7 +214,7 @@ async def test_complete_bot():
         await conv.send_message("unittestquiz")
         resp = await conv.get_response()
         assert "Great! 🥳 I saved your new quiz." in resp.raw_text
-        assert "You can attempt to it under the name unittestquiz." in resp.raw_text
+        assert "You can attempt to it by the name unittestquiz." in resp.raw_text
 
         ###########
         # ATTEMPT #
@@ -221,7 +223,7 @@ async def test_complete_bot():
         # Tests entering attempt
         await conv.send_message("/attempt")
         resp = await conv.get_response()
-        assert 'Hi 😃 On which quiz do you want to participate?' in resp.raw_text
+        assert 'Hi 😃 On which quiz do you want to participate in?' in resp.raw_text
         assert 'Please enter the name of the quiz.' in resp.raw_text
         assert "If the quiz wasn't created by you, please enter the username of the creator after that."\
             in resp.raw_text
@@ -235,7 +237,7 @@ async def test_complete_bot():
         await conv.send_message("unittestquiz")
         resp: Message = await conv.get_response()
         assert "Lets go! 🙌 Have fun with the quiz 'unittestquiz'!" in resp.raw_text
-        assert 'You can cancel you participation with /cancelAttempt.' in resp.raw_text
+        assert 'You can cancel your participation with /cancelAttempt.' in resp.raw_text
         resp = await conv.get_response()
         assert '42?' in resp.raw_text
 
@@ -421,6 +423,6 @@ async def test_complete_bot():
         # Tests canceling removing process
         await conv.send_message("/cancelEdit")
         resp = await conv.get_response()
-        assert "I canceld the editing process." in resp.raw_text
+        assert "I canceled the editing process." in resp.raw_text
 
     await client.disconnect()

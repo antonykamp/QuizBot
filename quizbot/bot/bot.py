@@ -8,12 +8,10 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Conve
 import quizbot.bot.create_quiz as createQuiz
 import quizbot.bot.attempt_quiz as attemptQuiz
 import quizbot.bot.edit_quiz as editQuiz
-import json
 
 
 # Heroku Port
 PORT = int(os.environ.get('PORT', '8443'))
-MONGODB_TOKEN = ""
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -33,7 +31,7 @@ def print_help(update, _):
         '- ask for a string,\n'
         '- ask für a boolean value,\n'
         '- create multiple choice questions or\n'
-        '- create muttiple choice questions with one correct answer.\n'
+        '- create multiple choice questions with one correct answer.\n'
         'If you want to create a new quiz, call /create. 🤓\n'
         'If you want to attempt a quiz, call /attempt. 🤔\n'
         'If you want to rename one of your quizzes, call /rename. ✏️\n'
@@ -105,11 +103,9 @@ def setup_bot(updater):
 
 if __name__ == '__main__':
     # TODO Start message
-    with open("../../TOKEN.json", "r") as read_file:
-        data = json.load(read_file)
-    TELEGRAM_TOKEN = data['TELEGRAM_TOKEN']
-    MONGODB_TOKEN = data['MONGODB_TOKEN']
-    WEBHOOK = data['WEBHOOK']
+
+    TELEGRAM_TOKEN = os.environ['TELEGRAM_TOKEN']
+    WEBHOOK = os.environ['WEBHOOK']
 
     updater = Updater(TELEGRAM_TOKEN, use_context=True)
 

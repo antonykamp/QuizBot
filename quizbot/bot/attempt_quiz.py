@@ -4,22 +4,19 @@ Module with methods to attempt to a quiz with a telegram bot
 import logging
 import random
 import pickle
+import os
 import pymongo
 from telegram.ext import ConversationHandler
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, ChatAction
-from quizbot.bot.bot import MONGODB_TOKEN
 from quizbot.quiz.question_factory import QuestionBool, QuestionChoice, QuestionChoiceSingle, \
     QuestionNumber, QuestionString
 from quizbot.quiz.attempt import Attempt
-
-# MongoDB client and database
-client = pymongo.MongoClient(MONGODB_TOKEN)
-db = client.quizzes
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+db = pymongo.MongoClient(os.environ.get('MONGODB')).quizzes
 # Dict to store user data like an attempt instance
 userDict = dict()
 

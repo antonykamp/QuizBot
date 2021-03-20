@@ -1,11 +1,13 @@
 # QuizBot
 
+[![Build Status](https://travis-ci.com/antonykamp/QuizBot.svg?token=KLyVgPMWyiqQ3RqyF6uP&branch=master)](https://travis-ci.com/antonykamp/QuizBot)
+[![Documentation Status](https://readthedocs.org/projects/quizbot/badge/?version=latest)](https://quizbot.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/DuckNrOne/QuizBot/badge.svg?branch=main&t=DI7SAu)](https://coveralls.io/github/DuckNrOne/QuizBot?branch=main)
 
 QuizBot is a Telegram bot with which you can create and attempt quizzes.
 A quiz is a collection of possibly random questions.
 
-The processes and conversation of creating, attempting to, renaming, and removing existing  quizzes can be shown as automata-diagrams. Please take a look at the docs.
+The processes and conversation of creating, attempting to, renaming, and removing existing quizzes can be shown as automata-diagrams. Please take a look at the docs.
 
 ## Question types
 
@@ -62,4 +64,23 @@ my_quiz = Quiz()
 my_attempt = Attempt(my_quiz)
 ```
 
-It's no rocketscience
+# TOKENS
+
+If you want to host _QuizBot_ by yourself you need some enviroment variables:
+
+| Variable       | Usage                                     |
+| -------------- | ----------------------------------------- |
+| MONGODB        | The token from your MONGODB               |
+| TELEGRAM_TOKEN | The token of your telegram bot            |
+| WEBHOOK        | The webook to deploy the boot (eg heroku) |
+
+If you want to test the bot you also need
+
+| Variable    | Usage                                         |
+| ----------- | --------------------------------------------- |
+| API_HASH    | Your personal API_HASH to send messages       |
+| API_ID      | Your personal API_ID to send messages         |
+| SESSION_STR | Your personal session-string to send messages |
+| UPDATER_ID  | The Updater ID to send and receive messages   |
+
+It's no rocketscience ;)
