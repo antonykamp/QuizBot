@@ -1,3 +1,5 @@
+.. _Question Types:
+
 Question types
 ==============
 

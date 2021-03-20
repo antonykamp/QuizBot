@@ -1,3 +1,5 @@
+.. _Telegram Bot:
+
 Telegram bot
 ============
 The telegram bot is using the quiz foundation and it has three main functions:

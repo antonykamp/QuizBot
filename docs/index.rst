@@ -12,8 +12,8 @@ A quiz is a collection of possibly random questions.
 The processes and conversation of creating, attempting to, renaming, and removing existing quizzes can be shown as automata-diagrams.
 Please take a look at the docs, specifically the part of the bot itself.
 
-If you want to read more about the quiz foundation, take a look into [Quiz Foundation](quiz_foundation.rst).
-If you want to read more about the question types, take a look into [Question Types](question_types.rst).
+If you want to read more about the quiz foundation, take a look into :ref:`Quiz Foundation`.
+If you want to read more about the question types, take a look into :ref:`Question Types`.
 
 .. toctree::
    :maxdepth: 2

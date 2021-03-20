@@ -1,3 +1,5 @@
+<img src="docs/_static/logo.png" height="70px" align="left" />
+
 # QuizBot
 
 [![Build Status](https://travis-ci.com/antonykamp/QuizBot.svg?token=KLyVgPMWyiqQ3RqyF6uP&branch=master)](https://travis-ci.com/antonykamp/QuizBot)

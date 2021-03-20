@@ -1,3 +1,5 @@
+.. _Quiz Foundation:
+
 Quiz Foundation
 ===============
 With the *Quiz Foundation* you can...
