@@ -18,6 +18,7 @@ jobs:
           pip install .[all]
           pip install pyyaml
           pip install --upgrade pytest pytest-cov telethon pytest-asyncio
+          pip install -r requirements.txt
       - name: Run tests
         run: pytest --cov-report term-missing --cov=quizbot tests/
       - name: Coveralls
