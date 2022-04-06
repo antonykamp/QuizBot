@@ -2,9 +2,9 @@
 
 # QuizBot
 
-[![Build Status](https://travis-ci.com/antonykamp/QuizBot.svg?token=KLyVgPMWyiqQ3RqyF6uP&branch=master)](https://travis-ci.com/antonykamp/QuizBot)
+[![Build Status](![example workflow](https://github.com/antonykamp/QuizBot/actions/workflows/test.yml/badge.svg))
 [![Documentation Status](https://readthedocs.org/projects/quizbot/badge/?version=latest)](https://quizbot.readthedocs.io/en/latest/?badge=latest)
-[![Coverage Status](https://coveralls.io/repos/github/antonykamp/QuizBot/badge.svg?branch=master)](https://coveralls.io/github/antonykamp/QuizBot?branch=master)
+[![codecov](https://codecov.io/gh/antonykamp/QuizBot/branch/master/graph/badge.svg?token=8RPBQACNCW)](https://codecov.io/gh/antonykamp/QuizBot)
 
 QuizBot is a Telegram bot with which you can create and attempt quizzes.
 A quiz is a collection of possibly random questions.
