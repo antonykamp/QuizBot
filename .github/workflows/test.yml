@@ -20,7 +20,7 @@ jobs:
           pip install pyyaml
           pip install --upgrade pytest pytest-cov telethon pytest-asyncio
       - name: Run tests
-        run: pytest --cov-report=xml term-missing --cov=quizbot tests/
+        run: pytest --cov-report=xml --cov=quizbot tests/
       - name: codecov
         uses: codecov/codecov-action@v2
         with:
