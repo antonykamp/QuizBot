@@ -2,7 +2,7 @@
 
 # QuizBot
 
-[![Build Status](![example workflow](https://github.com/antonykamp/QuizBot/actions/workflows/test.yml/badge.svg))
+![example workflow](https://github.com/antonykamp/QuizBot/actions/workflows/test.yml/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/quizbot/badge/?version=latest)](https://quizbot.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/antonykamp/QuizBot/branch/master/graph/badge.svg?token=8RPBQACNCW)](https://codecov.io/gh/antonykamp/QuizBot)
 
