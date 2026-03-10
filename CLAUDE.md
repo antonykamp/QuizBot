@@ -28,6 +28,18 @@ uv run pytest --cov-report=xml --cov=quizbot tests/
 uv run pytest tests/quiz/test_quiz.py
 ```
 
+### Run migrations (local development)
+```bash
+DATABASE_URL=sqlite:///dev.db uv run alembic upgrade head
+```
+
+### Generate a new migration after model changes
+```bash
+DATABASE_URL=sqlite:///dev.db uv run alembic revision --autogenerate -m "describe change"
+```
+
+Production migrations run automatically via `preDeployCommand` in `render.yaml` before each deploy.
+
 ### Build Docker image
 ```bash
 docker build -t quizbot .
@@ -38,17 +50,12 @@ docker build -t quizbot .
 cd docs && make html
 ```
 
-### Run the bot locally
-Copy `.env.example` to `.env` and fill in the values, then run:
+### Run the bot locally (polling mode)
+Copy `.env.example` to `.env`, set `TELEGRAM_TOKEN`, and run:
 ```bash
 uv run python quizbot/bot/bot.py
 ```
-
-### Local development with Docker Compose
-```bash
-docker compose up
-```
-This starts both the bot and a local PostgreSQL database.
+When `WEBHOOK` is unset the bot starts in polling mode with a local SQLite database (`dev.db`). Set `WEBHOOK` to use webhook mode (production).
 
 ## Architecture
 
@@ -61,8 +68,8 @@ Two-layer design separating Telegram bot handlers from domain logic:
 
 - **`quizbot/bot/`** — Telegram conversation handlers (async, python-telegram-bot v21):
   - `models.py`: SQLAlchemy model (`QuizModel`) mapping quizzes to a PostgreSQL table with `username`, `quizname`, and `quizinstance` columns
-  - `config.py`: Centralized configuration — validates required env vars (`TELEGRAM_TOKEN`, `WEBHOOK`, `DATABASE_URL`) at startup and creates a SQLAlchemy `sessionmaker`
-  - `bot.py`: Entry point, registers all `ConversationHandler`s and starts webhook via `ApplicationBuilder`. Stores the shared `Session` factory on `app.bot_data['Session']`
+  - `config.py`: Centralized configuration — validates required env vars (`TELEGRAM_TOKEN`, `DATABASE_URL`) at startup and creates a SQLAlchemy `sessionmaker`. `WEBHOOK` is optional (omit for polling mode). Schema management is handled by Alembic migrations (see `migrations/`), not `create_all`
+  - `bot.py`: Entry point, registers all `ConversationHandler`s and starts in webhook or polling mode via `ApplicationBuilder`. Stores the shared `Session` factory on `app.bot_data['Session']`
   - `create_quiz.py`: Multi-step quiz creation flow (question type -> question -> answer -> settings -> name), stores to PostgreSQL
   - `attempt_quiz.py`: Quiz attempt flow, retrieves from PostgreSQL, tracks answers
   - `edit_quiz.py`: Rename/delete quiz operations
