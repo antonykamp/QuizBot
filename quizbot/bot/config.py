@@ -3,9 +3,14 @@ Centralized configuration and database connection for QuizBot.
 """
 
 import os
+from pathlib import Path
 
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+load_dotenv(Path(__file__).resolve().parents[2] / '.env')
+
 
 def get_config():
     """Load and validate all required configuration from environment variables."""
