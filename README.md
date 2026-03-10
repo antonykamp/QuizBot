@@ -2,7 +2,7 @@
 
 # QuizBot
 
-![example workflow](https://github.com/antonykamp/QuizBot/actions/workflows/test.yml/badge.svg)
+![CI](https://github.com/antonykamp/QuizBot/actions/workflows/test.yml/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/quizbot/badge/?version=latest)](https://quizbot.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/antonykamp/QuizBot/branch/master/graph/badge.svg?token=8RPBQACNCW)](https://codecov.io/gh/antonykamp/QuizBot)
 
@@ -60,29 +60,36 @@ Answer: Github
 my_quiz = Quiz()
 ```
 
-## Attemp quiz
+## Attempt quiz
 
 ```python
 my_attempt = Attempt(my_quiz)
 ```
 
-# TOKENS
+## Setup
 
-If you want to host _QuizBot_ by yourself you need some enviroment variables:
+### Local development
 
-| Variable       | Usage                                     |
-| -------------- | ----------------------------------------- |
-| MONGODB        | The token from your MONGODB               |
-| TELEGRAM_TOKEN | The token of your telegram bot            |
-| WEBHOOK        | The webook to deploy the boot (eg heroku) |
+1. Copy `.env.example` to `.env` and set `TELEGRAM_TOKEN` (get one from [@BotFather](https://t.me/BotFather))
+2. Install dependencies and run migrations:
+   ```bash
+   uv sync --dev
+   DATABASE_URL=sqlite:///dev.db uv run alembic upgrade head
+   ```
+3. Start the bot in polling mode:
+   ```bash
+   uv run python quizbot/bot/bot.py
+   ```
 
-If you want to test the bot you also need
+### Environment variables
 
-| Variable    | Usage                                         |
-| ----------- | --------------------------------------------- |
-| API_HASH    | Your personal API_HASH to send messages       |
-| API_ID      | Your personal API_ID to send messages         |
-| SESSION_STR | Your personal session-string to send messages |
-| UPDATER_ID  | The Updater ID to send and receive messages   |
+| Variable         | Required | Description                                          |
+| ---------------- | -------- | ---------------------------------------------------- |
+| `TELEGRAM_TOKEN` | Yes      | Telegram bot token from @BotFather                   |
+| `DATABASE_URL`   | Yes      | Database URL (e.g. `sqlite:///dev.db` for local dev) |
+| `WEBHOOK`        | No       | Webhook URL for production (omit for polling mode)   |
+| `PORT`           | No       | Webhook port (default: 8443)                         |
 
-It's no rocketscience ;)
+### Deployment
+
+The bot deploys to [Render](https://render.com) via Docker. See `render.yaml` for the Blueprint configuration. Alembic migrations run automatically at container startup.
