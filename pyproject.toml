@@ -16,6 +16,12 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/antonykamp/QuizBot"
 
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+
 [dependency-groups]
 dev = [
     "pytest",
