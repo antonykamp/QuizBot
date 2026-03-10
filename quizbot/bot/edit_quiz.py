@@ -137,6 +137,13 @@ async def enter_new_name(update, context):
         old_quiz = await asyncio.to_thread(
             session.query(QuizModel).filter_by(username=quiz_creator, quizname=old_quiz_name).first
         )
+        if old_quiz is None:
+            logger.info("[%s] Quiz '%s' was deleted before renaming",
+                        update.message.from_user.username, old_quiz_name)
+            await update.message.reply_text(
+                "The quiz '{}' doesn't exist anymore 😕".format(old_quiz_name)
+            )
+            return ConversationHandler.END
         old_quiz.quizname = new_quiz_name
         await asyncio.to_thread(session.commit)
     finally:

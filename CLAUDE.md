@@ -38,7 +38,7 @@ DATABASE_URL=sqlite:///dev.db uv run alembic upgrade head
 DATABASE_URL=sqlite:///dev.db uv run alembic revision --autogenerate -m "describe change"
 ```
 
-Production migrations run automatically via `preDeployCommand` in `render.yaml` before each deploy.
+Production migrations run automatically at container startup via the Dockerfile CMD before the bot starts.
 
 ### Build Docker image
 ```bash
