@@ -135,7 +135,7 @@ async def enter_answer(update, context):
         attempt.input_answer(user_message)
         # wait for next answer
         return 'ENTER_ANSWER'
-    elif not type(act_question) is QuestionChoice:
+    elif type(act_question) is not QuestionChoice:
 
         logger.info('[%s] Insert Answer "%s"',
                     update.message.from_user.username, user_message)

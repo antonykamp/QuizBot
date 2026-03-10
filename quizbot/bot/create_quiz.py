@@ -209,7 +209,7 @@ async def enter_randomness_question(update, context):
     """
 
     # Check for correct input
-    if not update.message.text in ('Yes', 'No'):
+    if update.message.text not in ('Yes', 'No'):
         await update.message.reply_text(
             "Thats not a 'Yes' or a 'No' 😕"
             "Should the answers be displayed in random order?",
@@ -246,7 +246,7 @@ async def enter_randomness_quiz(update, context):
     """
 
     # Check for correct input
-    if not update.message.text in ('Yes', 'No'):
+    if update.message.text not in ('Yes', 'No'):
         await update.message.reply_text(
             "Thats not a 'Yes' or a 'No' 😕"
             "Should the questions be displayed in random order?",
@@ -275,7 +275,7 @@ async def enter_result_after_question(update, context):
     """
 
     # Check for correct input
-    if not update.message.text in ('Yes', 'No'):
+    if update.message.text not in ('Yes', 'No'):
         await update.message.reply_text(
             "Thats not a 'Yes' or a 'No' 😕"
             "Should the result of the question be displayed after the question?",
@@ -304,7 +304,7 @@ async def enter_result_after_quiz(update, context):
     """
 
     # Check for correct input
-    if not update.message.text in ('Yes', 'No'):
+    if update.message.text not in ('Yes', 'No'):
         await update.message.reply_text(
             "Thats not a 'Yes' or a 'No' 😕"
             "Should the result of every question be displayed after the quiz?",
