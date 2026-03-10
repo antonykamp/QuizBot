@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: quizbot
+    runtime: docker
+    plan: free
+    envVars:
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: WEBHOOK
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: quizbot-db
+          property: connectionString
+
+databases:
+  - name: quizbot-db
+    plan: free

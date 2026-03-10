@@ -38,4 +38,4 @@ The best way to show their way to work is by using an automata diagram. You can 
 
   The automata of the process to remove an existing quiz
 
-The rename- and remove-process takes place in `bot.edit_quiz.py`. Saving, loading, renaming and deleting a quiz works with mongoDB
+The rename- and remove-process takes place in `bot.edit_quiz.py`. Saving, loading, renaming and deleting a quiz works with PostgreSQL (via SQLAlchemy). Schema migrations are managed by Alembic.

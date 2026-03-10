@@ -164,7 +164,7 @@ class QuestionChoice(Question):
 
         :param new_answer: New answer in the list of possible answers as string.
         """
-        assert not new_answer in self.possible_answers
+        assert new_answer not in self.possible_answers
         self.possible_answers.append(new_answer)
 
     def check_solution(self):

@@ -1,44 +1,41 @@
 """
 Module with methods to attempt to a quiz with a telegram bot
 """
+import asyncio
 import logging
 import random
 import pickle
-import os
-import pymongo
 from telegram.ext import ConversationHandler
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, ChatAction
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram.constants import ChatAction
 from quizbot.quiz.question_factory import QuestionBool, QuestionChoice, QuestionChoiceSingle, \
     QuestionNumber, QuestionString
 from quizbot.quiz.attempt import Attempt
+from quizbot.bot.models import QuizModel
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-db = pymongo.MongoClient(os.environ.get('MONGODB')).quizzes
-# Dict to store user data like an attempt instance
-userDict = dict()
 
-
-def start(update, _):
+async def start(update, context):
     """
     Starts a conversation about an attempt at a quiz.
     Welcomes the user and asks for a quiz.
     """
     logger.info('[%s] Attempt initialized', update.message.from_user.username)
 
-    if update.message.from_user.id in userDict:
+    if context.user_data.get('attempt') is not None:
         # user is in the middle of a quiz and can't attempt a second one
         logger.info('[%s] Attempt canceled because the user is in the middle of a quiz.',
                     update.message.from_user.username)
-        update.message.reply_text(
+        await update.message.reply_text(
             "You're in the middle of a quiz. You can't attempt a second one 😁\n"
             'If you want to cancel your attempt, enter /cancelAttempt.'
         )
         return ConversationHandler.END
 
-    update.message.reply_text(
+    await update.message.reply_text(
         'Hi 😃 On which quiz do you want to participate in?\n'
         'Please enter the name of the quiz. '
         'If the quiz wasn\'t created by you, please enter the username of the creator after that.'
@@ -46,7 +43,7 @@ def start(update, _):
     return 'ENTER_QUIZ'
 
 
-def cancel(update, _):
+async def cancel(update, context):
     """
     Cancels an attempt to a quiz by deleting the users' entries.
     """
@@ -54,13 +51,13 @@ def cancel(update, _):
                 update.message.from_user.username)
 
     # Remove all user data
-    userDict.pop(update.message.from_user.id)
-    update.message.reply_text(
+    context.user_data.clear()
+    await update.message.reply_text(
         "I canceled you attempt. See you next time. 🙋‍♂️")
     return ConversationHandler.END
 
 
-def enter_quiz(update, context):
+async def enter_quiz(update, context):
     """
     Enters a quiz.
     Try to load a quiz from the input.
@@ -68,8 +65,6 @@ def enter_quiz(update, context):
     """
     logger.info('[%s] Quiz "%s" entered',
                 update.message.from_user.username, update.message.text)
-
-    user_id = update.message.from_user.id
 
     # name of the quiz is the first word, the creator the from_user by default
     quizname = update.message.text.split()[0]
@@ -80,16 +75,21 @@ def enter_quiz(update, context):
         quizcreator = update.message.text.split()[1]
 
     # Bot is typing during database query
-    context.bot.send_chat_action(
+    await context.bot.send_chat_action(
         chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
 
-    # Quizzes created by the entered user
-    user_col = db[quizcreator]
     # Looking for quizname in the database
-    quiz_dict = user_col.find_one({'quizname': quizname})
-    if quiz_dict is None:
+    Session = context.bot_data['Session']
+    session = Session()
+    try:
+        result = await asyncio.to_thread(
+            session.query(QuizModel).filter_by(username=quizcreator, quizname=quizname).first
+        )
+    finally:
+        session.close()
+    if result is None:
         # couldnt find the quiz
-        update.message.reply_text(
+        await update.message.reply_text(
             "Sorry, I couldn't find the quiz '{}' 😕 Please try again.".format(
                 quizname)
         )
@@ -100,27 +100,27 @@ def enter_quiz(update, context):
     logger.info('[%s] Found Quiz %s',
                 update.message.from_user.username, quizname)
     # if a quiz was found, load it and creates an attempt
-    loaded_quiz = pickle.loads(quiz_dict['quizinstance'])
-    userDict[user_id] = Attempt(loaded_quiz)
-    update.message.reply_text(
+    loaded_quiz = pickle.loads(result.quizinstance)
+    context.user_data['attempt'] = Attempt(loaded_quiz)
+    await update.message.reply_text(
         "Lets go! 🙌 Have fun with the quiz '{}'!\n\
             You can cancel your participation with /cancelAttempt.".format(quizname)
     )
 
     # Asks first question
-    ask_question(update)
+    await ask_question(update, context)
     return 'ENTER_ANSWER'
 
 
-def enter_answer(update, _):
+async def enter_answer(update, context):
     """
     It processes the answer to a question and asks a new question, if possible.
     Otherwise, it prints results.
     """
 
-    user_id = update.message.from_user.id
     user_message = update.message.text
-    act_question = userDict[user_id].act_question()
+    attempt = context.user_data['attempt']
+    act_question = attempt.act_question()
 
     # If the current question is a multiple-choice question,
     # the bot has to wait for "Enter" to enter the answer.
@@ -132,51 +132,51 @@ def enter_answer(update, _):
 
         # add answer to list of users' answers
         # TODO What if user answer isnt in possible messages
-        userDict[user_id].input_answer(user_message)
+        attempt.input_answer(user_message)
         # wait for next answer
         return 'ENTER_ANSWER'
-    elif not type(act_question) is QuestionChoice:
+    elif type(act_question) is not QuestionChoice:
 
         logger.info('[%s] Insert Answer "%s"',
                     update.message.from_user.username, user_message)
 
         # add answer to list of users' answers
-        userDict[user_id].input_answer(user_message)
+        attempt.input_answer(user_message)
 
     # enter the answer of user
     try:
-        is_correct, correct_answer = userDict[user_id].enter_answer()
+        is_correct, correct_answer = attempt.enter_answer()
     except AssertionError:
-        userDict[user_id].user_answers.clear()
+        attempt.user_answers.clear()
         logger.info("[%s] Something went wrong by entering the answer.",
                     update.message.from_user.username)
-        update.message.reply_text(
+        await update.message.reply_text(
             "Sorry 😕 Something went wrong by entering your answer. Please try again.")
         return 'ENTER_ANSWER'
 
     logger.info('[%s] Entered Answer', update.message.from_user.username)
 
-    if userDict[user_id].quiz.show_results_after_question:
+    if attempt.quiz.show_results_after_question:
         # If creator of the quiz wants the user to see him/her results after the question
         if is_correct:
-            update.message.reply_text("Thats correct 😁")
+            await update.message.reply_text("Thats correct 😁")
         else:
-            update.message.reply_text(
+            await update.message.reply_text(
                 "Sorry, thats not correct. 😕\nThe correct answer is: {}".format(correct_answer))
 
-    if userDict[user_id].has_next_question():
+    if attempt.has_next_question():
         # check for next question
-        ask_question(update)
+        await ask_question(update, context)
         return 'ENTER_ANSWER'
 
     # no question left
-    update.message.reply_text(
+    await update.message.reply_text(
         "Thanks for your participation! ☺️", reply_markup=ReplyKeyboardRemove())
-    if userDict[user_id].quiz.show_results_after_quiz:
+    if attempt.quiz.show_results_after_quiz:
         # If creator of the quiz wants the user to see him/her results after the quiz
         count = 1
-        for is_correct, question in userDict[user_id].user_points:
-            update.message.reply_text(
+        for is_correct, question in attempt.user_points:
+            await update.message.reply_text(
                 "Question {}:\n".format(count)
                 + question.question + "\n"
                 "Your answer was " +
@@ -186,17 +186,17 @@ def enter_answer(update, _):
             count = count + 1
 
     # Deletes the users entries to closes the attempt
-    del userDict[update.message.from_user.id]
+    context.user_data.clear()
     logger.info('[%s] Quitting Quiz', update.message.from_user.username)
     return ConversationHandler.END
 
 
-def ask_question(update):
+async def ask_question(update, context):
     """
     Formats the keyboard and prints the current question.
     """
-    user_id = update.message.from_user.id
-    act_question = userDict[user_id].act_question()
+    attempt = context.user_data['attempt']
+    act_question = attempt.act_question()
 
     if isinstance(act_question, (QuestionString, QuestionNumber)):
         # String or number question: Use normal Keyboard
@@ -225,7 +225,7 @@ def ask_question(update):
             list_of_answers, one_time_keyboard=False)
 
     # print question
-    update.message.reply_text(
+    await update.message.reply_text(
         act_question.question,
         reply_markup=reply_markup
     )

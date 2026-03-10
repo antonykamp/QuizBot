@@ -1,0 +1,17 @@
+version = 1
+
+[merge]
+method = "squash"
+automerge_label = "automerge"
+require_automerge_label = true
+
+[merge.automerge_dependencies]
+versions = ["minor", "patch"]
+usernames = ["dependabot"]
+
+[update]
+always = true
+require_automerge_label = true
+
+[approve]
+auto_approve_usernames = ["dependabot"]

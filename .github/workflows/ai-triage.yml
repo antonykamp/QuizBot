@@ -1,0 +1,24 @@
+name: AI Issue Triage
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  ai-triage:
+    if: github.event.label.name == 'request ai review'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      models: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/ai-assessment-comment-labeler@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue_number: ${{ github.event.issue.number }}
+          issue_body: ${{ github.event.issue.body }}
+          ai_review_label: "request ai review"
+          prompts_directory: "./.github/prompts"
+          labels_to_prompts_mapping: "bug,bug-review.prompt.yml;enhancement,feature-review.prompt.yml"
