@@ -23,6 +23,19 @@ dev = [
     "pytest-asyncio",
 ]
 
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest tests/ {args}"
+test-cov = "pytest --cov-report=xml --cov=quizbot tests/ {args}"
+migrate = "alembic upgrade head"
+start = "python quizbot/bot/bot.py"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
