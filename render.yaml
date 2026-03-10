@@ -18,3 +18,4 @@ services:
 databases:
   - name: quizbot-db
     plan: free
+    region: frankfurt
