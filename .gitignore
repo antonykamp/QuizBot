@@ -135,7 +135,6 @@ dmypy.json
 TOKEN.json
 
 # uv
-uv.lock
 
 # Alembic
 migrations/versions/__pycache__/
