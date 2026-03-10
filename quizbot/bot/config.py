@@ -14,7 +14,6 @@ def get_config():
     """Load and validate all required configuration from environment variables."""
     required = {
         'TELEGRAM_TOKEN': os.environ.get('TELEGRAM_TOKEN'),
-        'WEBHOOK': os.environ.get('WEBHOOK'),
         'DATABASE_URL': os.environ.get('DATABASE_URL'),
     }
     missing = [k for k, v in required.items() if not v]
@@ -24,6 +23,7 @@ def get_config():
         )
     return {
         **required,
+        'WEBHOOK': os.environ.get('WEBHOOK'),
         'PORT': int(os.environ.get('PORT', '8443')),
     }
 

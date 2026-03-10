@@ -106,9 +106,13 @@ if __name__ == '__main__':
 
     setup_bot(app)
 
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=config['PORT'],
-        url_path=config['TELEGRAM_TOKEN'],
-        webhook_url=config['WEBHOOK'] + config['TELEGRAM_TOKEN'],
-    )
+    if config['WEBHOOK']:
+        app.run_webhook(
+            listen="0.0.0.0",
+            port=config['PORT'],
+            url_path=config['TELEGRAM_TOKEN'],
+            webhook_url=config['WEBHOOK'] + config['TELEGRAM_TOKEN'],
+        )
+    else:
+        logger.info('No WEBHOOK set, starting in polling mode')
+        app.run_polling()
