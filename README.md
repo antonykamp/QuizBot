@@ -9,6 +9,8 @@
 QuizBot is a Telegram bot with which you can create and attempt quizzes.
 A quiz is a collection of possibly random questions.
 
+> **Try it out!** The bot is live on Telegram: **[@antonysquizbot](https://t.me/antonysquizbot)**
+
 The processes and conversation of creating, attempting to, renaming, and removing existing quizzes can be shown as automata-diagrams. Please take a look at the docs.
 
 ## Question types
@@ -80,6 +82,15 @@ my_attempt = Attempt(my_quiz)
    ```bash
    uv run python quizbot/bot/bot.py
    ```
+
+Common scripts are also available via `hatch run`:
+
+| Script     | Command                                            |
+| ---------- | -------------------------------------------------- |
+| `test`     | `hatch run test` — run the test suite              |
+| `test-cov` | `hatch run test-cov` — run tests with coverage     |
+| `migrate`  | `hatch run migrate` — run Alembic migrations       |
+| `start`    | `hatch run start` — start the bot in polling mode  |
 
 ### Environment variables
 

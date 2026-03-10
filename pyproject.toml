@@ -6,7 +6,7 @@ authors = [{ name = "Antony Kamp", email = "antony.kamp@student.hpi.de" }]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "python-telegram-bot[webhooks]~=21.10",
+    "python-telegram-bot[webhooks]~=22.6",
     "sqlalchemy~=2.0",
     "psycopg2-binary~=2.9",
     "alembic~=1.15",
@@ -16,6 +16,12 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/antonykamp/QuizBot"
 
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+
 [dependency-groups]
 dev = [
     "pytest",
@@ -23,6 +29,19 @@ dev = [
     "pytest-asyncio",
     "pre-commit",
 ]
+
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest tests/ {args}"
+test-cov = "pytest --cov-report=xml --cov=quizbot tests/ {args}"
+migrate = "alembic upgrade head"
+start = "python quizbot/bot/bot.py"
 
 [build-system]
 requires = ["hatchling"]
