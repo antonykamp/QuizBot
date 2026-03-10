@@ -81,6 +81,15 @@ my_attempt = Attempt(my_quiz)
    uv run python quizbot/bot/bot.py
    ```
 
+Common scripts are also available via `hatch run`:
+
+| Script     | Command                                            |
+| ---------- | -------------------------------------------------- |
+| `test`     | `hatch run test` — run the test suite              |
+| `test-cov` | `hatch run test-cov` — run tests with coverage     |
+| `migrate`  | `hatch run migrate` — run Alembic migrations       |
+| `start`    | `hatch run start` — start the bot in polling mode  |
+
 ### Environment variables
 
 | Variable         | Required | Description                                          |

@@ -8,6 +8,8 @@ QuizBot is a Telegram bot for creating and taking quizzes, built with `python-te
 
 ## Commands
 
+Common development scripts are defined in `pyproject.toml` under `[tool.hatch.envs.default.scripts]` and can be run with `hatch run <name>` (e.g. `hatch run test`, `hatch run test-cov`).
+
 ### Install dependencies
 ```bash
 uv sync --dev
@@ -78,4 +80,4 @@ Bot handlers use `telegram.ext.ConversationHandler` with defined states for mult
 
 ## Testing
 
-Tests live in `tests/quiz/` and cover domain models only (no bot handler tests). Uses pytest.
+Tests live in `tests/quiz/` (domain models) and `tests/bot/` (Telegram handler tests). Uses pytest with `pytest-asyncio` (strict mode). Bot tests use an in-memory SQLite database with `StaticPool` and mock Telegram objects. Shared fixtures are in `tests/bot/conftest.py`.
