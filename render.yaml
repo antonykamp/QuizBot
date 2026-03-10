@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: quizbot
+    runtime: docker
+    plan: free
+    envVars:
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: WEBHOOK
+        sync: false
+      - key: MONGODB
+        sync: false
