@@ -3,7 +3,6 @@ services:
     name: quizbot
     runtime: docker
     plan: free
-    preDeployCommand: "uv run alembic upgrade head"
     envVars:
       - key: TELEGRAM_TOKEN
         sync: false
@@ -12,7 +11,7 @@ services:
       - key: DATABASE_URL
         fromDatabase:
           name: quizbot-db
-          property: connectionURI
+          property: connectionString
 
 databases:
   - name: quizbot-db
