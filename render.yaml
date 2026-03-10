@@ -3,6 +3,7 @@ services:
     name: quizbot
     runtime: docker
     plan: free
+    preDeployCommand: "uv run alembic upgrade head"
     envVars:
       - key: TELEGRAM_TOKEN
         sync: false

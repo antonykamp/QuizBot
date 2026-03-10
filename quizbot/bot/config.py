@@ -7,9 +7,6 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from quizbot.bot.models import Base
-
-
 def get_config():
     """Load and validate all required configuration from environment variables."""
     required = {
@@ -29,7 +26,6 @@ def get_config():
 
 
 def get_session_factory(database_url):
-    """Create a SQLAlchemy engine, ensure tables exist, and return a sessionmaker."""
+    """Create a SQLAlchemy engine and return a sessionmaker."""
     engine = create_engine(database_url)
-    Base.metadata.create_all(engine)
     return sessionmaker(bind=engine)

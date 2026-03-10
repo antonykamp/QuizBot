@@ -9,6 +9,7 @@ dependencies = [
     "python-telegram-bot~=21.10",
     "sqlalchemy~=2.0",
     "psycopg2-binary~=2.9",
+    "alembic~=1.15",
 ]
 
 [project.urls]
