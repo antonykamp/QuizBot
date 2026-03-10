@@ -7,7 +7,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 import quizbot.bot.create_quiz as createQuiz
 import quizbot.bot.attempt_quiz as attemptQuiz
 import quizbot.bot.edit_quiz as editQuiz
-from quizbot.bot.config import get_config, get_db
+from quizbot.bot.config import get_config, get_session_factory
 
 
 # Enable logging
@@ -99,10 +99,10 @@ def setup_bot(app):
 
 if __name__ == '__main__':
     config = get_config()
-    db = get_db(config['MONGODB'])
+    Session = get_session_factory(config['DATABASE_URL'])
 
     app = ApplicationBuilder().token(config['TELEGRAM_TOKEN']).build()
-    app.bot_data['db'] = db
+    app.bot_data['Session'] = Session
 
     setup_bot(app)
 

@@ -11,6 +11,7 @@ from telegram.ext import ConversationHandler
 from quizbot.quiz.question_factory import QuestionBool, QuestionChoice,\
     QuestionChoiceSingle, QuestionNumber, QuestionString
 from quizbot.quiz.quiz import Quiz
+from quizbot.bot.models import QuizModel
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -338,8 +339,15 @@ async def enter_quiz_name(update, context):
         chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
 
     # Query for question with input name
-    user_col = context.bot_data['db'][update.message.from_user.username]
-    result = await asyncio.to_thread(user_col.find_one, {'quizname': quizname})
+    username = update.message.from_user.username
+    Session = context.bot_data['Session']
+    session = Session()
+    try:
+        result = await asyncio.to_thread(
+            session.query(QuizModel).filter_by(username=username, quizname=quizname).first
+        )
+    finally:
+        session.close()
     if result is not None:
         # Quiz with quizname already exists
         await update.message.reply_text(
@@ -352,10 +360,14 @@ async def enter_quiz_name(update, context):
         return 'ENTER_QUIZ_NAME'
 
     # Insert Quiz with quizname in database
-    await asyncio.to_thread(
-        user_col.insert_one,
-        {'quizname': quizname, 'quizinstance': pickle.dumps(context.user_data['quiz'])}
-    )
+    session = Session()
+    try:
+        quiz_row = QuizModel(username=username, quizname=quizname,
+                             quizinstance=pickle.dumps(context.user_data['quiz']))
+        session.add(quiz_row)
+        await asyncio.to_thread(session.commit)
+    finally:
+        session.close()
     await update.message.reply_text(
         "Great! 🥳 I saved your new quiz."
         "You can attempt to it by the name {}.".format(quizname),

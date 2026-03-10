@@ -11,6 +11,7 @@ from telegram.constants import ChatAction
 from quizbot.quiz.question_factory import QuestionBool, QuestionChoice, QuestionChoiceSingle, \
     QuestionNumber, QuestionString
 from quizbot.quiz.attempt import Attempt
+from quizbot.bot.models import QuizModel
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -77,11 +78,16 @@ async def enter_quiz(update, context):
     await context.bot.send_chat_action(
         chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
 
-    # Quizzes created by the entered user
-    user_col = context.bot_data['db'][quizcreator]
     # Looking for quizname in the database
-    quiz_dict = await asyncio.to_thread(user_col.find_one, {'quizname': quizname})
-    if quiz_dict is None:
+    Session = context.bot_data['Session']
+    session = Session()
+    try:
+        result = await asyncio.to_thread(
+            session.query(QuizModel).filter_by(username=quizcreator, quizname=quizname).first
+        )
+    finally:
+        session.close()
+    if result is None:
         # couldnt find the quiz
         await update.message.reply_text(
             "Sorry, I couldn't find the quiz '{}' 😕 Please try again.".format(
@@ -94,7 +100,7 @@ async def enter_quiz(update, context):
     logger.info('[%s] Found Quiz %s',
                 update.message.from_user.username, quizname)
     # if a quiz was found, load it and creates an attempt
-    loaded_quiz = pickle.loads(quiz_dict['quizinstance'])
+    loaded_quiz = pickle.loads(result.quizinstance)
     context.user_data['attempt'] = Attempt(loaded_quiz)
     await update.message.reply_text(
         "Lets go! 🙌 Have fun with the quiz '{}'!\n\

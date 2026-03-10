@@ -4,7 +4,10 @@ Centralized configuration and database connection for QuizBot.
 
 import os
 
-import pymongo
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from quizbot.bot.models import Base
 
 
 def get_config():
@@ -12,7 +15,7 @@ def get_config():
     required = {
         'TELEGRAM_TOKEN': os.environ.get('TELEGRAM_TOKEN'),
         'WEBHOOK': os.environ.get('WEBHOOK'),
-        'MONGODB': os.environ.get('MONGODB'),
+        'DATABASE_URL': os.environ.get('DATABASE_URL'),
     }
     missing = [k for k, v in required.items() if not v]
     if missing:
@@ -25,6 +28,8 @@ def get_config():
     }
 
 
-def get_db(mongodb_uri):
-    """Create a MongoDB client and return the quizzes database."""
-    return pymongo.MongoClient(mongodb_uri).quizzes
+def get_session_factory(database_url):
+    """Create a SQLAlchemy engine, ensure tables exist, and return a sessionmaker."""
+    engine = create_engine(database_url)
+    Base.metadata.create_all(engine)
+    return sessionmaker(bind=engine)

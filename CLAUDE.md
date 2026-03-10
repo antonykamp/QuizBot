@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-QuizBot is a Telegram bot for creating and taking quizzes, built with `python-telegram-bot` (v21.x, async) and MongoDB for persistence. Deployed via Docker.
+QuizBot is a Telegram bot for creating and taking quizzes, built with `python-telegram-bot` (v21.x, async) and PostgreSQL with SQLAlchemy for persistence. Deployed via Docker.
 
 ## Commands
 
@@ -44,6 +44,12 @@ Copy `.env.example` to `.env` and fill in the values, then run:
 uv run python quizbot/bot/bot.py
 ```
 
+### Local development with Docker Compose
+```bash
+docker compose up
+```
+This starts both the bot and a local PostgreSQL database.
+
 ## Architecture
 
 Two-layer design separating Telegram bot handlers from domain logic:
@@ -54,13 +60,14 @@ Two-layer design separating Telegram bot handlers from domain logic:
   - `question_factory.py`: Polymorphic question hierarchy (`QuestionNumber`, `QuestionString`, `QuestionBool`, `QuestionChoice`, `QuestionChoiceSingle`) with a factory for instantiation
 
 - **`quizbot/bot/`** — Telegram conversation handlers (async, python-telegram-bot v21):
-  - `config.py`: Centralized configuration — validates required env vars (`TELEGRAM_TOKEN`, `WEBHOOK`, `MONGODB`) at startup and creates a single shared MongoDB client
-  - `bot.py`: Entry point, registers all `ConversationHandler`s and starts webhook via `ApplicationBuilder`. Stores the shared `db` on `app.bot_data['db']`
-  - `create_quiz.py`: Multi-step quiz creation flow (question type -> question -> answer -> settings -> name), stores to MongoDB
-  - `attempt_quiz.py`: Quiz attempt flow, retrieves from MongoDB, tracks answers
+  - `models.py`: SQLAlchemy model (`QuizModel`) mapping quizzes to a PostgreSQL table with `username`, `quizname`, and `quizinstance` columns
+  - `config.py`: Centralized configuration — validates required env vars (`TELEGRAM_TOKEN`, `WEBHOOK`, `DATABASE_URL`) at startup and creates a SQLAlchemy `sessionmaker`
+  - `bot.py`: Entry point, registers all `ConversationHandler`s and starts webhook via `ApplicationBuilder`. Stores the shared `Session` factory on `app.bot_data['Session']`
+  - `create_quiz.py`: Multi-step quiz creation flow (question type -> question -> answer -> settings -> name), stores to PostgreSQL
+  - `attempt_quiz.py`: Quiz attempt flow, retrieves from PostgreSQL, tracks answers
   - `edit_quiz.py`: Rename/delete quiz operations
 
-Bot handlers use `telegram.ext.ConversationHandler` with defined states for multi-step interactions. All handlers are `async def` and use `await` for Telegram API calls. User session data is held in `context.user_data` during conversations. The database is accessed via `context.bot_data['db']`. Blocking pymongo calls are wrapped in `asyncio.to_thread()`. Completed quizzes persist in MongoDB (database: `quizzes`).
+Bot handlers use `telegram.ext.ConversationHandler` with defined states for multi-step interactions. All handlers are `async def` and use `await` for Telegram API calls. User session data is held in `context.user_data` during conversations. The database session factory is accessed via `context.bot_data['Session']`. Blocking SQLAlchemy calls are wrapped in `asyncio.to_thread()`. Completed quizzes persist in PostgreSQL.
 
 ## Testing
 
