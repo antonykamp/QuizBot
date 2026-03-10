@@ -23,6 +23,13 @@ dev = [
     "pytest-asyncio",
 ]
 
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+]
+
 [tool.hatch.envs.default.scripts]
 test = "pytest tests/ {args}"
 test-cov = "pytest --cov-report=xml --cov=quizbot tests/ {args}"
