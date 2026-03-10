@@ -2,7 +2,9 @@ services:
   - type: web
     name: quizbot
     runtime: docker
+    region: frankfurt
     plan: free
+    branch: master
     envVars:
       - key: TELEGRAM_TOKEN
         sync: false
