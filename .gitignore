@@ -128,8 +128,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# SQLite dev database
+*.db
+
 # JSON with tokens for bot, mongodb
 TOKEN.json
 
 # uv
 uv.lock
+
+# Alembic
+migrations/versions/__pycache__/
