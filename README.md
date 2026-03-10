@@ -9,6 +9,8 @@
 QuizBot is a Telegram bot with which you can create and attempt quizzes.
 A quiz is a collection of possibly random questions.
 
+> **Try it out!** The bot is live on Telegram: **[@antonysquizbot](https://t.me/antonysquizbot)**
+
 The processes and conversation of creating, attempting to, renaming, and removing existing quizzes can be shown as automata-diagrams. Please take a look at the docs.
 
 ## Question types
