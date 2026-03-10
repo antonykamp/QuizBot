@@ -27,6 +27,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
+    "pre-commit",
 ]
 
 [tool.hatch.envs.default]
