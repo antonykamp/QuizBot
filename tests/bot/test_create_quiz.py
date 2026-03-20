@@ -1,7 +1,6 @@
 """
 Tests the quiz creation flow in quizbot.bot.create_quiz.
 """
-import pickle
 import pytest
 from unittest.mock import MagicMock
 
@@ -12,6 +11,7 @@ from quizbot.bot.create_quiz import (
     enter_possible_answer, enter_randomness_question,
     enter_randomness_quiz, enter_result_after_question,
     enter_result_after_quiz, enter_quiz_name,
+    enter_password_choice, enter_password,
 )
 from quizbot.bot.models import QuizModel
 from quizbot.quiz.quiz import Quiz
@@ -348,7 +348,7 @@ async def test_enter_result_after_quiz_invalid_reprompts():
 # -- enter_quiz_name tests --
 
 @pytest.mark.asyncio
-async def test_enter_quiz_name_saves_to_db(db_session):
+async def test_enter_quiz_name_goes_to_password_choice(db_session):
     quiz = Quiz("testuser")
     quiz.add_question(QuestionString("What?", "answer"))
     update = _make_update(username="testuser", text="my_new_quiz")
@@ -356,16 +356,8 @@ async def test_enter_quiz_name_saves_to_db(db_session):
 
     result = await enter_quiz_name(update, context)
 
-    assert result == ConversationHandler.END
-    assert context.user_data == {}
-
-    # Verify persisted to DB
-    session = db_session()
-    row = session.query(QuizModel).filter_by(username="testuser", quizname="my_new_quiz").first()
-    session.close()
-    assert row is not None
-    loaded = pickle.loads(row.quizinstance)
-    assert isinstance(loaded, Quiz)
+    assert result == "ENTER_PASSWORD_CHOICE"
+    assert context.user_data["quizname"] == "my_new_quiz"
 
 
 @pytest.mark.asyncio
@@ -380,3 +372,68 @@ async def test_enter_quiz_name_duplicate(db_session):
     assert result == "ENTER_QUIZ_NAME"
     reply_text = update.message.reply_text.call_args[0][0]
     assert "already" in reply_text.lower()
+
+
+# -- enter_password_choice tests --
+
+@pytest.mark.asyncio
+async def test_enter_password_choice_no_saves_without_password(db_session):
+    quiz = Quiz("testuser")
+    quiz.add_question(QuestionString("What?", "answer"))
+    update = _make_update(username="testuser", text="No")
+    context = _make_context(db_session, user_data={"quiz": quiz, "quizname": "my_quiz"})
+
+    result = await enter_password_choice(update, context)
+
+    assert result == ConversationHandler.END
+    assert context.user_data == {}
+
+    session = db_session()
+    row = session.query(QuizModel).filter_by(username="testuser", quizname="my_quiz").first()
+    session.close()
+    assert row is not None
+    assert row.password is None
+
+
+@pytest.mark.asyncio
+async def test_enter_password_choice_yes(db_session):
+    quiz = Quiz("testuser")
+    update = _make_update(text="Yes")
+    context = _make_context(db_session, user_data={"quiz": quiz, "quizname": "my_quiz"})
+
+    result = await enter_password_choice(update, context)
+
+    assert result == "ENTER_PASSWORD"
+
+
+@pytest.mark.asyncio
+async def test_enter_password_choice_invalid_reprompts(db_session):
+    quiz = Quiz("testuser")
+    update = _make_update(text="maybe")
+    context = _make_context(db_session, user_data={"quiz": quiz, "quizname": "my_quiz"})
+
+    result = await enter_password_choice(update, context)
+
+    assert result == "ENTER_PASSWORD_CHOICE"
+
+
+# -- enter_password tests --
+
+@pytest.mark.asyncio
+async def test_enter_password_saves_with_hashed_password(db_session):
+    quiz = Quiz("testuser")
+    quiz.add_question(QuestionString("What?", "answer"))
+    update = _make_update(username="testuser", text="secret123")
+    context = _make_context(db_session, user_data={"quiz": quiz, "quizname": "my_quiz"})
+
+    result = await enter_password(update, context)
+
+    assert result == ConversationHandler.END
+    assert context.user_data == {}
+
+    session = db_session()
+    row = session.query(QuizModel).filter_by(username="testuser", quizname="my_quiz").first()
+    session.close()
+    assert row is not None
+    assert row.password is not None
+    assert row.password.startswith("$argon2")

@@ -5,6 +5,7 @@ Module with methods to create a quiz with a telegram bot
 import asyncio
 import logging
 import pickle
+from argon2 import PasswordHasher
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.constants import ChatAction
 from telegram.ext import ConversationHandler
@@ -327,7 +328,7 @@ async def enter_result_after_quiz(update, context):
 async def enter_quiz_name(update, context):
     """
     After entering the name of the quiz, it looks up if the quiz name is occupied.
-    Otherwise is saves the quiz.
+    If unique, asks whether the user wants to set a password.
     """
 
     logger.info('[%s] Completed quiz creation',
@@ -359,11 +360,66 @@ async def enter_quiz_name(update, context):
 
         return 'ENTER_QUIZ_NAME'
 
-    # Insert Quiz with quizname in database
+    # Store quizname for later save
+    context.user_data['quizname'] = quizname
+
+    # Ask if the user wants to set a password
+    await update.message.reply_text(
+        "Do you want to set a password for this quiz? 🔒\n"
+        "Other users will need it to attempt the quiz. You can always attempt without it.",
+        reply_markup=ReplyKeyboardMarkup(
+            [['Yes', 'No']], one_time_keyboard=True)
+    )
+    return 'ENTER_PASSWORD_CHOICE'
+
+
+async def enter_password_choice(update, context):
+    """
+    After choosing whether to set a password, either asks for the password
+    or saves the quiz without one.
+    """
+    if update.message.text == 'No':
+        return await _save_quiz(update, context, password=None)
+
+    if update.message.text == 'Yes':
+        await update.message.reply_text("Please enter the password 🔑")
+        return 'ENTER_PASSWORD'
+
+    # Invalid input
+    await update.message.reply_text(
+        "Thats not a 'Yes' or a 'No' 😕"
+        "Do you want to set a password for this quiz?",
+        reply_markup=ReplyKeyboardMarkup(
+            [['Yes', 'No']], one_time_keyboard=True)
+    )
+    return 'ENTER_PASSWORD_CHOICE'
+
+
+async def enter_password(update, context):
+    """
+    Hashes the password and saves the quiz to the database.
+    """
+    ph = PasswordHasher()
+    hashed = ph.hash(update.message.text)
+    return await _save_quiz(update, context, password=hashed)
+
+
+async def _save_quiz(update, context, password=None):
+    """
+    Saves the quiz to the database with an optional password hash.
+    """
+    username = update.message.from_user.username
+    quizname = context.user_data['quizname']
+
+    Session = context.bot_data['Session']
     session = Session()
     try:
-        quiz_row = QuizModel(username=username, quizname=quizname,
-                             quizinstance=pickle.dumps(context.user_data['quiz']))
+        quiz_row = QuizModel(
+            username=username,
+            quizname=quizname,
+            quizinstance=pickle.dumps(context.user_data['quiz']),
+            password=password,
+        )
         session.add(quiz_row)
         await asyncio.to_thread(session.commit)
     finally:
@@ -374,7 +430,7 @@ async def enter_quiz_name(update, context):
         reply_markup=ReplyKeyboardRemove()
     )
     logger.info('[%s] Quiz saved as "%s"',
-                update.message.from_user.username, update.message.text)
+                update.message.from_user.username, quizname)
     # Delete user data
     context.user_data.clear()
     return ConversationHandler.END

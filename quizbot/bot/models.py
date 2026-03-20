@@ -11,6 +11,7 @@ class QuizModel(Base):
     username = Column(String, nullable=False, index=True)
     quizname = Column(String, nullable=False)
     quizinstance = Column(LargeBinary, nullable=False)
+    password = Column(String, nullable=True)
 
     __table_args__ = (
         UniqueConstraint('username', 'quizname'),
