@@ -46,7 +46,13 @@ class SQLAlchemyPersistence(BasePersistence):
             session = self._Session()
             try:
                 rows = session.query(ConversationState).filter_by(handler_name=name).all()
-                return {(row.chat_id, row.user_id): int(row.state) for row in rows}
+                def _parse_state(s):
+                    try:
+                        return int(s)
+                    except ValueError:
+                        return s
+
+                return {(row.chat_id, row.user_id): _parse_state(row.state) for row in rows}
             finally:
                 session.close()
 
