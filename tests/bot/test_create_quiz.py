@@ -1,7 +1,6 @@
 """
 Tests the quiz creation flow in quizbot.bot.create_quiz.
 """
-import pickle
 import pytest
 from unittest.mock import MagicMock
 
