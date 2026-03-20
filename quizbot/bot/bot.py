@@ -8,6 +8,7 @@ import quizbot.bot.create_quiz as createQuiz
 import quizbot.bot.attempt_quiz as attemptQuiz
 import quizbot.bot.edit_quiz as editQuiz
 from quizbot.bot.config import get_config, get_session_factory
+from quizbot.bot.persistence import SQLAlchemyPersistence
 
 
 # Enable logging
@@ -60,7 +61,9 @@ def setup_bot(app):
     create_handler = ConversationHandler(
         entry_points=[CommandHandler('create', createQuiz.start)],
         states=create_states,
-        fallbacks=[CommandHandler('cancelCreate', createQuiz.cancel)]
+        fallbacks=[CommandHandler('cancelCreate', createQuiz.cancel)],
+        name="create_quiz",
+        persistent=True,
     )
     app.add_handler(create_handler)
 
@@ -72,7 +75,9 @@ def setup_bot(app):
     attempt_handler = ConversationHandler(
         entry_points=[CommandHandler('attempt', attemptQuiz.start)],
         states=attempt_states,
-        fallbacks=[CommandHandler('cancelAttempt', attemptQuiz.cancel)]
+        fallbacks=[CommandHandler('cancelAttempt', attemptQuiz.cancel)],
+        name="attempt_quiz",
+        persistent=True,
     )
     app.add_handler(attempt_handler)
 
@@ -86,7 +91,9 @@ def setup_bot(app):
         entry_points=[CommandHandler('rename', editQuiz.start_rename), CommandHandler(
             'remove', editQuiz.start_remove)],
         states=edit_states,
-        fallbacks=[CommandHandler('cancelEdit', editQuiz.cancel_edit)]
+        fallbacks=[CommandHandler('cancelEdit', editQuiz.cancel_edit)],
+        name="edit_quiz",
+        persistent=True,
     )
     app.add_handler(edit_handler)
 
@@ -101,7 +108,8 @@ if __name__ == '__main__':
     config = get_config()
     Session = get_session_factory(config['DATABASE_URL'])
 
-    app = ApplicationBuilder().token(config['TELEGRAM_TOKEN']).build()
+    persistence = SQLAlchemyPersistence(database_url=config['DATABASE_URL'])
+    app = ApplicationBuilder().token(config['TELEGRAM_TOKEN']).persistence(persistence).build()
     app.bot_data['Session'] = Session
 
     setup_bot(app)
