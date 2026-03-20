@@ -100,6 +100,14 @@ def setup_bot(app):
     # help command
     app.add_handler(CommandHandler("help", print_help))
 
+    # fallback for unrecognized messages
+    async def unknown(update, _):
+        await update.message.reply_text(
+            "I don't understand that. Use /help to see what I can do."
+        )
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
+    app.add_handler(MessageHandler(filters.COMMAND, unknown))
+
     # log all errors
     app.add_error_handler(error)
 
