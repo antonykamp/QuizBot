@@ -3,6 +3,7 @@ Telegram bot to create and attempt to quizzes.
 """
 
 import logging
+from telegram import BotCommand
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ConversationHandler, filters
 import quizbot.bot.create_quiz as createQuiz
 import quizbot.bot.attempt_quiz as attemptQuiz
@@ -115,12 +116,23 @@ def setup_bot(app):
     app.add_error_handler(error)
 
 
+async def post_init(application):
+    """Set bot commands visible in the Telegram command menu."""
+    await application.bot.set_my_commands([
+        BotCommand("help", "Show help and available commands"),
+        BotCommand("create", "Create a new quiz"),
+        BotCommand("attempt", "Attempt an existing quiz"),
+        BotCommand("rename", "Rename one of your quizzes"),
+        BotCommand("remove", "Delete one of your quizzes"),
+    ])
+
+
 if __name__ == '__main__':
     config = get_config()
     Session = get_session_factory(config['DATABASE_URL'])
 
     persistence = SQLAlchemyPersistence(database_url=config['DATABASE_URL'])
-    app = ApplicationBuilder().token(config['TELEGRAM_TOKEN']).persistence(persistence).build()
+    app = ApplicationBuilder().token(config['TELEGRAM_TOKEN']).persistence(persistence).post_init(post_init).build()
     app.bot_data['Session'] = Session
 
     setup_bot(app)
