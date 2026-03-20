@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from quizbot.bot.models import Base, QuizModel
+from quizbot.bot.persistence import SQLAlchemyPersistence
 from quizbot.quiz.quiz import Quiz
 
 
@@ -25,6 +26,12 @@ def db_session():
     Session = sessionmaker(bind=engine)
     yield Session
     engine.dispose()
+
+
+@pytest.fixture
+def persistence(db_session):
+    """Create a SQLAlchemyPersistence backed by the in-memory test database."""
+    return SQLAlchemyPersistence(session_factory=db_session)
 
 
 def _make_update(username="testuser", text="myquiz"):
