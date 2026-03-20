@@ -57,6 +57,8 @@ def setup_bot(app):
         'ENTER_RESULT_AFTER_QUESTION': [MessageHandler(filters.TEXT & ~filters.COMMAND, createQuiz.enter_result_after_question)],
         'ENTER_RESULT_AFTER_QUIZ': [MessageHandler(filters.TEXT & ~filters.COMMAND, createQuiz.enter_result_after_quiz)],
         'ENTER_QUIZ_NAME': [MessageHandler(filters.TEXT & ~filters.COMMAND, createQuiz.enter_quiz_name)],
+        'ENTER_PASSWORD_CHOICE': [MessageHandler(filters.TEXT & ~filters.COMMAND, createQuiz.enter_password_choice)],
+        'ENTER_PASSWORD': [MessageHandler(filters.TEXT & ~filters.COMMAND, createQuiz.enter_password)],
     }
     create_handler = ConversationHandler(
         entry_points=[CommandHandler('create', createQuiz.start)],
@@ -70,7 +72,8 @@ def setup_bot(app):
     # Conversation if the user wants to attempt a quiz
     attempt_states = {
         'ENTER_QUIZ': [MessageHandler(filters.TEXT & ~filters.COMMAND, attemptQuiz.enter_quiz)],
-        'ENTER_ANSWER': [MessageHandler(filters.TEXT & ~filters.COMMAND, attemptQuiz.enter_answer)]
+        'ENTER_ANSWER': [MessageHandler(filters.TEXT & ~filters.COMMAND, attemptQuiz.enter_answer)],
+        'ENTER_PASSWORD': [MessageHandler(filters.TEXT & ~filters.COMMAND, attemptQuiz.enter_password)],
     }
     attempt_handler = ConversationHandler(
         entry_points=[CommandHandler('attempt', attemptQuiz.start)],

@@ -5,6 +5,8 @@ import asyncio
 import logging
 import random
 import pickle
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from telegram.ext import ConversationHandler
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.constants import ChatAction
@@ -99,8 +101,51 @@ async def enter_quiz(update, context):
 
     logger.info('[%s] Found Quiz %s',
                 update.message.from_user.username, quizname)
+
+    attempting_user = update.message.from_user.username
+    if result.password is not None and attempting_user != quizcreator:
+        # Quiz is password-protected and the user is not the author
+        context.user_data['pending_quiz'] = pickle.loads(result.quizinstance)
+        context.user_data['pending_password'] = result.password
+        context.user_data['pending_quizname'] = quizname
+        await update.message.reply_text(
+            "This quiz is password-protected 🔒 Please enter the password.")
+        return 'ENTER_PASSWORD'
+
     # if a quiz was found, load it and creates an attempt
     loaded_quiz = pickle.loads(result.quizinstance)
+    context.user_data['attempt'] = Attempt(loaded_quiz)
+    await update.message.reply_text(
+        "Lets go! 🙌 Have fun with the quiz '{}'!\n\
+            You can cancel your participation with /cancelAttempt.".format(quizname)
+    )
+
+    # Asks first question
+    await ask_question(update, context)
+    return 'ENTER_ANSWER'
+
+
+async def enter_password(update, context):
+    """
+    Verifies the password for a password-protected quiz.
+    If correct, starts the attempt. If wrong, reprompts.
+    """
+    ph = PasswordHasher()
+    stored_hash = context.user_data['pending_password']
+    try:
+        ph.verify(stored_hash, update.message.text)
+    except VerifyMismatchError:
+        await update.message.reply_text(
+            "Wrong password, please try again. 🔒")
+        return 'ENTER_PASSWORD'
+
+    quizname = context.user_data['pending_quizname']
+    loaded_quiz = context.user_data['pending_quiz']
+    # Clean up pending data
+    del context.user_data['pending_quiz']
+    del context.user_data['pending_password']
+    del context.user_data['pending_quizname']
+
     context.user_data['attempt'] = Attempt(loaded_quiz)
     await update.message.reply_text(
         "Lets go! 🙌 Have fun with the quiz '{}'!\n\
