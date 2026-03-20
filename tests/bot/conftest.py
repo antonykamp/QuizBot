@@ -53,7 +53,7 @@ def _make_context(session_factory, user_data=None):
     return context
 
 
-def _insert_quiz(session_factory, username, quizname, quiz=None):
+def _insert_quiz(session_factory, username, quizname, quiz=None, password=None):
     """Insert a QuizModel row."""
     session = session_factory()
     if quiz is None:
@@ -62,6 +62,7 @@ def _insert_quiz(session_factory, username, quizname, quiz=None):
         username=username,
         quizname=quizname,
         quizinstance=pickle.dumps(quiz),
+        password=password,
     )
     session.add(model)
     session.commit()
