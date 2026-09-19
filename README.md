@@ -1,3 +1,5 @@
+
+
 <img src="docs/_static/logo.png" height="70px" align="left" />
 
 # QuizBot
@@ -72,7 +74,7 @@ my_attempt = Attempt(my_quiz)
 
 ### Local development
 
-1. Copy `.env.example` to `.env` and set `TELEGRAM_TOKEN` (get one from [@BotFather](https://t.me/BotFather))
+1. Copy `.env.example` to `.env` and set `TELEGRAM_TOKEN` (get one from [@BotFather](https://t.me/BotFather)) and `DATABASE_URL` (e.g., `sqlite:///dev.db` for local development)
 2. Install dependencies and run migrations:
    ```bash
    uv sync --dev
