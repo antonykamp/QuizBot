@@ -11,7 +11,7 @@ dependencies = [
     "psycopg2-binary~=2.9",
     "alembic~=1.15",
     "python-dotenv~=1.1",
-    "argon2-cffi~=23.1",
+    "argon2-cffi>=23.1,<26.0",
 ]
 
 [project.urls]
